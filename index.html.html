@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4-7-8 Breathing Exercise</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: url('1.jpg') no-repeat center center/cover;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+        .timer {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .progress {
+            width: 300px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .progress-bar {
+            height: 100%;
+            background: #4caf50;
+            width: 0;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            background: #00796b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>4-7-8 Breathing Exercise</h1>
+    <div class="phase">Inhale</div>
+    <div class="timer">4s</div>
+    <div class="progress">
+        <div class="progress-bar"></div>
+    </div>
+    <button onclick="toggleBreathing()">Start</button>
+    <div class="cycle-count">Completed Cycles: 0</div>
+    <audio id="background-audio" loop>
+        <source src="1.mp3" type="audio/mp3">
+    </audio>
+    <audio id="inhale-audio">
+        <source src="inhale.mp3" type="audio/mp3">
+    </audio>
+    <audio id="hold-audio">
+        <source src="hold.mp3" type="audio/mp3">
+    </audio>
+    <audio id="exhale-audio">
+        <source src="exhale.mp3" type="audio/mp3">
+    </audio>
+    <script>
+        const phases = [
+            { label: "Inhale", duration: 4, sound: "inhale-audio" },
+            { label: "Hold", duration: 7, sound: "hold-audio" },
+            { label: "Exhale", duration: 8, sound: "exhale-audio" }
+        ];
+        let phaseIndex = 0;
+        let timeLeft = phases[0].duration;
+        let isActive = false;
+        let cycleCount = 0;
+        let interval;
+        const phaseText = document.querySelector(".phase");
+        const timerText = document.querySelector(".timer");
+        const progressBar = document.querySelector(".progress-bar");
+        const cycleCountText = document.querySelector(".cycle-count");
+        const backgroundAudio = document.getElementById("background-audio");
+
+        function playPhaseSound() {
+            const sound = document.getElementById(phases[phaseIndex].sound);
+            if (sound) sound.play();
+        }
+
+        function updateUI() {
+            phaseText.innerText = phases[phaseIndex].label;
+            timerText.innerText = `${timeLeft}s`;
+            progressBar.style.width = `${(timeLeft / phases[phaseIndex].duration) * 100}%`;
+        }
+
+        function startBreathing() {
+            isActive = true;
+            backgroundAudio.volume = 0.5; // Adjust volume if needed
+            backgroundAudio.play().catch(error => console.log("Autoplay blocked:", error)); // Fix autoplay issue
+            playPhaseSound();
+            interval = setInterval(() => {
+                if (timeLeft === 0) {
+                    phaseIndex = (phaseIndex + 1) % phases.length;
+                    timeLeft = phases[phaseIndex].duration;
+                    playPhaseSound();
+                    if (phaseIndex === 0) cycleCount++;
+                    cycleCountText.innerText = `Completed Cycles: ${cycleCount}`;
+                } else {
+                    timeLeft--;
+                }
+                updateUI();
+            }, 1000);
+        }
+
+        function stopBreathing() {
+            isActive = false;
+            backgroundAudio.pause();
+            clearInterval(interval);
+        }
+
+        function toggleBreathing() {
+            if (isActive) {
+                stopBreathing();
+                document.querySelector("button").innerText = "Start";
+            } else {
+                backgroundAudio.muted = false; // Ensure unmuted
+                startBreathing();
+                document.querySelector("button").innerText = "Pause";
+            }
+        }
+
+        updateUI();
+    </script>
+</body>
+</html>
